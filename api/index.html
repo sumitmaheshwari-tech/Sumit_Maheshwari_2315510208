@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Office AI Solution | Intelligent Analytics Query Engine</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Prism.js for SQL Highlighting -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f7ff',
+              100: '#e0effe',
+              500: '#0284c7',
+              600: '#0369a1',
+              700: '#075985',
+              900: '#0c4a6e',
+            },
+            slate: {
+              850: '#151f32',
+              900: '#0f172a',
+              950: '#090d16'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Fira Code', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+    
+    /* Clean custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  </style>
+</head>
+<body class="bg-[#f8fafc] text-slate-800 antialiased min-h-screen flex flex-col font-sans">
+
+  <!-- Top Navigation Bar -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Logo & System Branding -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-lg bg-slate-900 flex items-center justify-center text-white shadow-sm">
+          <i data-lucide="layers" class="w-5 h-5 text-sky-400"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="font-bold text-slate-900 tracking-tight text-lg">Office AI Solution</span>
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200">v1.0 Engine</span>
+          </div>
+          <p class="text-xs text-slate-500 font-medium">Intelligent Analytics Query Engine</p>
+        </div>
+      </div>
+
+      <!-- Center Nav Tabs -->
+      <nav class="hidden md:flex space-x-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
+        <button onclick="switchTab('studio')" id="tab-studio" class="tab-btn px-4 py-1.5 text-xs font-medium rounded-md bg-white text-slate-900 shadow-sm transition">
+          <span class="flex items-center space-x-1.5"><i data-lucide="terminal" class="w-3.5 h-3.5"></i><span>Query Studio</span></span>
+        </button>
+        <button onclick="switchTab('data')" id="tab-data" class="tab-btn px-4 py-1.5 text-xs font-medium rounded-md text-slate-600 hover:text-slate-900 transition">
+          <span class="flex items-center space-x-1.5"><i data-lucide="database" class="w-3.5 h-3.5"></i><span>Dataset Explorer</span></span>
+        </button>
+        <button onclick="switchTab('feedback')" id="tab-feedback" class="tab-btn px-4 py-1.5 text-xs font-medium rounded-md text-slate-600 hover:text-slate-900 transition">
+          <span class="flex items-center space-x-1.5"><i data-lucide="sparkles" class="w-3.5 h-3.5"></i><span>Feedback Loop</span></span>
+        </button>
+        <button onclick="switchTab('arch')" id="tab-arch" class="tab-btn px-4 py-1.5 text-xs font-medium rounded-md text-slate-600 hover:text-slate-900 transition">
+          <span class="flex items-center space-x-1.5"><i data-lucide="cpu" class="w-3.5 h-3.5"></i><span>Architecture</span></span>
+        </button>
+      </nav>
+
+      <!-- Right Controls: Provider & Status -->
+      <div class="flex items-center space-x-3">
+        <div class="flex items-center space-x-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full text-xs font-medium">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>DuckDB In-Memory OLAP</span>
+        </div>
+        <select id="providerSelect" class="bg-white border border-slate-300 text-slate-700 text-xs rounded-lg px-2.5 py-1.5 font-medium focus:outline-none focus:ring-2 focus:ring-sky-500">
+          <option value="gemini">Google Gemini Flash-Lite (Ultra Fast & Stable)</option>
+          <option value="openai">OpenAI GPT-4o-mini</option>
+        </select>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+
+    <!-- TAB 1: QUERY STUDIO -->
+    <div id="view-studio" class="space-y-6">
+
+      <!-- Query Input Box Card -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 relative">
+        <div class="flex items-center justify-between mb-2">
+          <label for="queryInput" class="text-sm font-semibold text-slate-900 flex items-center space-x-2">
+            <i data-lucide="message-square" class="w-4 h-4 text-sky-600"></i>
+            <span>Ask an Analytical Question</span>
+          </label>
+          <span class="text-xs text-slate-400 font-mono">Press Ctrl+Enter to run</span>
+        </div>
+
+        <div class="relative">
+          <textarea id="queryInput" rows="2" 
+            placeholder="e.g., Which region missed its target in Feb? or Top 2 cities by profit..."
+            class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-3.5 pr-28 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:bg-white transition resize-none"></textarea>
+          
+          <button id="runBtn" onclick="runQuery()" 
+            class="absolute right-2.5 bottom-3 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium rounded-lg shadow transition flex items-center space-x-1.5">
+            <i data-lucide="play" class="w-3.5 h-3.5 text-sky-400"></i>
+            <span>Execute</span>
+          </button>
+        </div>
+
+        <!-- Quick Sample Chips -->
+        <div class="mt-4 pt-4 border-t border-slate-100 flex items-center flex-wrap gap-2">
+          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider mr-1 flex items-center space-x-1">
+            <i data-lucide="compass" class="w-3 h-3"></i>
+            <span>Sample Queries:</span>
+          </span>
+          <button onclick="selectSample(0)" class="sample-chip text-xs bg-slate-100 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-200 text-slate-700 px-2.5 py-1 rounded-md border border-slate-200 transition">India March Sales</button>
+          <button onclick="selectSample(1)" class="sample-chip text-xs bg-slate-100 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-200 text-slate-700 px-2.5 py-1 rounded-md border border-slate-200 transition">Top 2 Cities Profit</button>
+          <button onclick="selectSample(2)" class="sample-chip text-xs bg-slate-100 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-200 text-slate-700 px-2.5 py-1 rounded-md border border-slate-200 transition">Average Order Value</button>
+          <button onclick="selectSample(3)" class="sample-chip text-xs bg-slate-100 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-200 text-slate-700 px-2.5 py-1 rounded-md border border-slate-200 transition">Feb Target Miss</button>
+          <button onclick="selectSample(4)" class="sample-chip text-xs bg-slate-100 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-200 text-slate-700 px-2.5 py-1 rounded-md border border-slate-200 transition">Category Contribution %</button>
+          <button onclick="selectSample(5)" class="sample-chip text-xs bg-slate-100 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-200 text-slate-700 px-2.5 py-1 rounded-md border border-slate-200 transition">Top Product per Region</button>
+          <button onclick="selectSample(6)" class="sample-chip text-xs bg-slate-100 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-200 text-slate-700 px-2.5 py-1 rounded-md border border-slate-200 transition">YoY Revenue Growth</button>
+          <button onclick="selectSample(7)" class="sample-chip text-xs bg-slate-100 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-200 text-slate-700 px-2.5 py-1 rounded-md border border-slate-200 transition">Top 3 Customers/Region</button>
+        </div>
+      </div>
+
+      <!-- Execution Results Section -->
+      <div id="resultsCard" class="hidden space-y-6">
+        
+        <!-- Status & Confidence Metrics Header -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Confidence Card -->
+          <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex items-center justify-between">
+            <div>
+              <p class="text-xs text-slate-500 font-medium">Confidence Score</p>
+              <div class="flex items-baseline space-x-2 mt-1">
+                <span id="confScoreVal" class="text-2xl font-bold text-slate-900 font-mono">0.95</span>
+                <span id="confBadge" class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">High Confidence</span>
+              </div>
+            </div>
+            <div id="confIconContainer" class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <i data-lucide="shield-check" class="w-6 h-6"></i>
+            </div>
+          </div>
+
+          <!-- Execution Speed Card -->
+          <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex items-center justify-between">
+            <div>
+              <p class="text-xs text-slate-500 font-medium">Execution Engine</p>
+              <div class="flex items-baseline space-x-2 mt-1">
+                <span class="text-lg font-bold text-slate-900">DuckDB OLAP</span>
+                <span class="text-xs text-slate-400 font-mono">In-Memory</span>
+              </div>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center">
+              <i data-lucide="zap" class="w-6 h-6"></i>
+            </div>
+          </div>
+
+          <!-- Self-Healing Card -->
+          <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex items-center justify-between">
+            <div>
+              <p class="text-xs text-slate-500 font-medium">Self-Healing Loop</p>
+              <div class="flex items-baseline space-x-2 mt-1">
+                <span id="retryVal" class="text-lg font-bold text-slate-900">1st Pass Clean</span>
+                <span class="text-xs text-emerald-600 font-medium">0 Errors</span>
+              </div>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+              <i data-lucide="refresh-cw" class="w-6 h-6"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2-Column Layout: Results & Logic -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          <!-- Left Column: Result Data Table / KPI (7 cols) -->
+          <div class="lg:col-span-7 bg-white rounded-xl border border-slate-200 shadow-sm p-5 flex flex-col">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+              <h3 class="text-sm font-semibold text-slate-900 flex items-center space-x-2">
+                <i data-lucide="table" class="w-4 h-4 text-sky-600"></i>
+                <span>Execution Result</span>
+              </h3>
+              <span id="resultCountBadge" class="text-xs text-slate-400 font-mono">Computed live</span>
+            </div>
+
+            <!-- Dynamic Table or Metric Rendering Area -->
+            <div id="resultContent" class="overflow-x-auto flex-1 min-h-[160px] flex items-center justify-center text-slate-400 text-sm">
+              No results yet
+            </div>
+          </div>
+
+          <!-- Right Column: Generated Logic (SQL) (5 cols) -->
+          <div class="lg:col-span-5 bg-white rounded-xl border border-slate-200 shadow-sm p-5 flex flex-col">
+            <div class="flex items-center justify-between mb-3 pb-3 border-b border-slate-100">
+              <h3 class="text-sm font-semibold text-slate-900 flex items-center space-x-2">
+                <i data-lucide="code" class="w-4 h-4 text-indigo-600"></i>
+                <span>Generated Executable Logic</span>
+              </h3>
+              <button onclick="copySQL()" class="text-xs text-slate-500 hover:text-slate-900 flex items-center space-x-1 px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 transition">
+                <i data-lucide="copy" class="w-3 h-3"></i>
+                <span id="copyBtnText">Copy</span>
+              </button>
+            </div>
+
+            <div class="flex-1 bg-slate-950 rounded-lg p-3 overflow-x-auto font-mono text-xs text-slate-200">
+              <pre><code id="sqlCode" class="language-sql">-- SQL logic will appear here</code></pre>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Explanation Card -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+          <div class="flex items-center space-x-2 mb-2 pb-2 border-b border-slate-100">
+            <i data-lucide="info" class="w-4 h-4 text-amber-500"></i>
+            <h3 class="text-sm font-semibold text-slate-900">System Explanation & Business Logic</h3>
+          </div>
+          <p id="explanationText" class="text-sm text-slate-700 leading-relaxed">
+            Explanation will be displayed here.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- TAB 2: DATASET EXPLORER -->
+    <div id="view-data" class="hidden space-y-6">
+      
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <h2 class="text-base font-bold text-slate-900 mb-1 flex items-center space-x-2">
+          <i data-lucide="database" class="w-5 h-5 text-sky-600"></i>
+          <span>Database Architecture & Data Dictionary</span>
+        </h2>
+        <p class="text-xs text-slate-500 mb-6">In-memory tables registered inside DuckDB with derived virtual views.</p>
+
+        <!-- Metric Definitions Card -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div class="p-4 rounded-lg bg-slate-50 border border-slate-200">
+            <span class="text-xs font-semibold text-sky-700 uppercase tracking-wide">Metric Formula</span>
+            <p class="text-sm font-bold text-slate-900 mt-1">Revenue</p>
+            <p class="text-xs text-slate-600 font-mono mt-1">quantity * unit_price * (1 - discount)</p>
+          </div>
+          <div class="p-4 rounded-lg bg-slate-50 border border-slate-200">
+            <span class="text-xs font-semibold text-emerald-700 uppercase tracking-wide">Metric Formula</span>
+            <p class="text-sm font-bold text-slate-900 mt-1">Average Order Value (AOV)</p>
+            <p class="text-xs text-slate-600 font-mono mt-1">SUM(revenue) / COUNT(order_id)</p>
+          </div>
+          <div class="p-4 rounded-lg bg-slate-50 border border-slate-200">
+            <span class="text-xs font-semibold text-indigo-700 uppercase tracking-wide">Time Formatting</span>
+            <p class="text-sm font-bold text-slate-900 mt-1">Month & Quarter</p>
+            <p class="text-xs text-slate-600 font-mono mt-1">strftime(order_date, '%Y-%m')</p>
+          </div>
+        </div>
+
+        <!-- Sales Data Table Preview -->
+        <div class="mb-8">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-slate-900">Table: `sales_data.csv` (10 records sample)</h3>
+            <span class="text-xs text-slate-400 font-mono">15 columns</span>
+          </div>
+          <div class="overflow-x-auto border border-slate-200 rounded-lg">
+            <table class="min-w-full text-xs text-left text-slate-700">
+              <thead class="bg-slate-100 text-slate-800 font-semibold border-b border-slate-200">
+                <tr>
+                  <th class="p-2.5">Order ID</th>
+                  <th class="p-2.5">Date</th>
+                  <th class="p-2.5">Region</th>
+                  <th class="p-2.5">Country</th>
+                  <th class="p-2.5">City</th>
+                  <th class="p-2.5">Product</th>
+                  <th class="p-2.5 text-right">Qty</th>
+                  <th class="p-2.5 text-right">Price</th>
+                  <th class="p-2.5 text-right">Discount</th>
+                  <th class="p-2.5 text-right">Profit</th>
+                </tr>
+              </thead>
+              <tbody id="salesTableBody" class="divide-y divide-slate-100">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Targets Table Preview -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-slate-900">Table: `targets.csv`</h3>
+            <span class="text-xs text-slate-400 font-mono">9 records</span>
+          </div>
+          <div class="overflow-x-auto border border-slate-200 rounded-lg">
+            <table class="min-w-full text-xs text-left text-slate-700">
+              <thead class="bg-slate-100 text-slate-800 font-semibold border-b border-slate-200">
+                <tr>
+                  <th class="p-2.5">Region</th>
+                  <th class="p-2.5">Month</th>
+                  <th class="p-2.5 text-right">Target Revenue ($)</th>
+                </tr>
+              </thead>
+              <tbody id="targetsTableBody" class="divide-y divide-slate-100">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- TAB 3: FEEDBACK LOOP -->
+    <div id="view-feedback" class="hidden space-y-6">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <h2 class="text-base font-bold text-slate-900 mb-1 flex items-center space-x-2">
+          <i data-lucide="sparkles" class="w-5 h-5 text-amber-500"></i>
+          <span>Continuous Learning & In-Context Feedback Loop</span>
+        </h2>
+        <p class="text-xs text-slate-500 mb-6">
+          The engine reads <code>dataset/feedback_log.csv</code> and matches previous user corrections to inject few-shot guidance into the prompt, preventing repeated errors.
+        </p>
+
+        <div class="space-y-4" id="feedbackList">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: ARCHITECTURE -->
+    <div id="view-arch" class="hidden space-y-6">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <h2 class="text-base font-bold text-slate-900 mb-1 flex items-center space-x-2">
+          <i data-lucide="cpu" class="w-5 h-5 text-sky-600"></i>
+          <span>Compound AI Architecture Specifications</span>
+        </h2>
+        <p class="text-xs text-slate-500 mb-6">
+          Deterministic OLAP database engineering combined with Generative AI reasoning.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="border border-slate-200 rounded-lg p-4 bg-slate-50">
+            <h3 class="text-sm font-semibold text-slate-900 mb-2 flex items-center space-x-1.5">
+              <i data-lucide="shield" class="w-4 h-4 text-emerald-600"></i>
+              <span>Execution Sandboxing</span>
+            </h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Unlike Pandas-based approaches that execute arbitrary code via <code>eval()</code> (introducing major injection security risks), DuckDB runs in-memory read-only SQL queries with zero OS vulnerabilities.
+            </p>
+          </div>
+
+          <div class="border border-slate-200 rounded-lg p-4 bg-slate-50">
+            <h3 class="text-sm font-semibold text-slate-900 mb-2 flex items-center space-x-1.5">
+              <i data-lucide="activity" class="w-4 h-4 text-indigo-600"></i>
+              <span>Multi-Factor Confidence Scoring</span>
+            </h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Confidence is not an LLM hallucination. It is mathematically calculated across:
+              Execution stability (40%), Schema column validity (25%), Metric & aggregation integrity (20%), and Model certainty (15%).
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-400">
+    Office AI Solution • Intelligent Analytics Query Engine • Powered by DuckDB & GenAI
+  </footer>
+
+  <script>
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // Sample Queries Cache
+    const sampleQueries = [
+      "Total sales in India for March",
+      "Top 2 cities by profit",
+      "Average order value by region",
+      "Which region missed its target in Feb?",
+      "Sales contribution % by category",
+      "Top product in each region",
+      "YoY growth in revenue",
+      "Revenue of top 3 customers per region"
+    ];
+
+    function selectSample(index) {
+      document.getElementById('queryInput').value = sampleQueries[index];
+      runQuery();
+    }
+
+    // Tab Switching
+    function switchTab(tabId) {
+      ['studio', 'data', 'feedback', 'arch'].forEach(t => {
+        document.getElementById(`view-${t}`).classList.add('hidden');
+        const btn = document.getElementById(`tab-${t}`);
+        btn.classList.remove('bg-white', 'text-slate-900', 'shadow-sm');
+        btn.classList.add('text-slate-600');
+      });
+
+      document.getElementById(`view-${tabId}`).classList.remove('hidden');
+      const activeBtn = document.getElementById(`tab-${tabId}`);
+      activeBtn.classList.add('bg-white', 'text-slate-900', 'shadow-sm');
+      activeBtn.classList.remove('text-slate-600');
+
+      if (tabId === 'data') loadDatasets();
+      if (tabId === 'feedback') loadFeedback();
+    }
+
+    // Run Query API Call
+    async function runQuery() {
+      const query = document.getElementById('queryInput').value.trim();
+      if (!query) return;
+
+      const provider = document.getElementById('providerSelect').value;
+      const runBtn = document.getElementById('runBtn');
+      const resultsCard = document.getElementById('resultsCard');
+
+      runBtn.disabled = true;
+      runBtn.innerHTML = `<i data-lucide="loader" class="w-3.5 h-3.5 animate-spin"></i><span>Running...</span>`;
+      lucide.createIcons();
+
+      try {
+        const response = await fetch('/api/query', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query, provider })
+        });
+
+        const data = await response.json();
+        renderResults(data);
+        resultsCard.classList.remove('hidden');
+      } catch (err) {
+        alert("Execution Error: " + err.message);
+      } finally {
+        runBtn.disabled = false;
+        runBtn.innerHTML = `<i data-lucide="play" class="w-3.5 h-3.5 text-sky-400"></i><span>Execute</span>`;
+        lucide.createIcons();
+      }
+    }
+
+    // Render Query Results
+    function renderResults(data) {
+      // 1. Confidence Score
+      const score = data.confidence_score;
+      document.getElementById('confScoreVal').innerText = score.toFixed(2);
+      const confBadge = document.getElementById('confBadge');
+      if (score >= 0.90) {
+        confBadge.innerText = "High Confidence";
+        confBadge.className = "text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800";
+      } else if (score >= 0.70) {
+        confBadge.innerText = "Medium Confidence";
+        confBadge.className = "text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800";
+      } else {
+        confBadge.innerText = "Low Confidence";
+        confBadge.className = "text-xs font-semibold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800";
+      }
+
+      // 2. Generated SQL
+      const sqlBlock = document.getElementById('sqlCode');
+      sqlBlock.textContent = data.generated_logic;
+      Prism.highlightElement(sqlBlock);
+
+      // 3. Explanation
+      document.getElementById('explanationText').innerText = data.explanation;
+
+      // 4. Result Presentation
+      const container = document.getElementById('resultContent');
+      const res = data.result;
+
+      if (typeof res === 'number' || typeof res === 'string') {
+        container.innerHTML = `
+          <div class="text-center py-6">
+            <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Calculated Value</span>
+            <div class="text-4xl font-extrabold text-slate-900 font-mono mt-1">${typeof res === 'number' ? '$' + res.toLocaleString() : res}</div>
+          </div>
+        `;
+        document.getElementById('resultCountBadge').innerText = "1 scalar value";
+      } else if (Array.isArray(res) && res.length > 0) {
+        const columns = Object.keys(res[0]);
+        let tableHtml = `
+          <table class="min-w-full text-xs text-left text-slate-700 border border-slate-200 rounded-lg overflow-hidden">
+            <thead class="bg-slate-100 text-slate-800 font-semibold border-b border-slate-200">
+              <tr>
+                ${columns.map(c => `<th class="p-2.5 capitalize">${c.replace(/_/g, ' ')}</th>`).join('')}
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              ${res.map(row => `
+                <tr class="hover:bg-slate-50 transition">
+                  ${columns.map(c => `<td class="p-2.5 font-mono">${row[c] !== null ? row[c] : 'null'}</td>`).join('')}
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+        container.innerHTML = tableHtml;
+        document.getElementById('resultCountBadge').innerText = `${res.length} rows returned`;
+      } else {
+        container.innerHTML = `<div class="text-slate-400 text-sm">Query returned 0 records</div>`;
+        document.getElementById('resultCountBadge').innerText = "0 rows";
+      }
+    }
+
+    // Copy SQL Logic
+    function copySQL() {
+      const sql = document.getElementById('sqlCode').innerText;
+      navigator.clipboard.writeText(sql);
+      const btn = document.getElementById('copyBtnText');
+      btn.innerText = "Copied!";
+      setTimeout(() => btn.innerText = "Copy", 2000);
+    }
+
+    // Load Datasets into Explorer Tab
+    async function loadDatasets() {
+      try {
+        const res = await fetch('/api/datasets');
+        const data = await res.json();
+        
+        // Render Sales Table
+        const salesTbody = document.getElementById('salesTableBody');
+        salesTbody.innerHTML = data.sales.map(r => `
+          <tr class="hover:bg-slate-50">
+            <td class="p-2.5 font-mono">${r.order_id}</td>
+            <td class="p-2.5">${r.order_date}</td>
+            <td class="p-2.5">${r.region}</td>
+            <td class="p-2.5">${r.country}</td>
+            <td class="p-2.5">${r.city}</td>
+            <td class="p-2.5 font-medium">${r.product_name}</td>
+            <td class="p-2.5 text-right font-mono">${r.quantity}</td>
+            <td class="p-2.5 text-right font-mono">$${r.unit_price}</td>
+            <td class="p-2.5 text-right font-mono">${r.discount * 100}%</td>
+            <td class="p-2.5 text-right font-mono text-emerald-600 font-semibold">$${r.profit}</td>
+          </tr>
+        `).join('');
+
+        // Render Targets Table
+        const targetsTbody = document.getElementById('targetsTableBody');
+        targetsTbody.innerHTML = data.targets.map(r => `
+          <tr class="hover:bg-slate-50">
+            <td class="p-2.5 font-semibold text-slate-900">${r.region}</td>
+            <td class="p-2.5 font-mono">${r.month}</td>
+            <td class="p-2.5 text-right font-mono font-semibold text-sky-700">$${r.target_revenue.toLocaleString()}</td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // Load Feedback Items
+    async function loadFeedback() {
+      try {
+        const res = await fetch('/api/feedback');
+        const data = await res.json();
+        const list = document.getElementById('feedbackList');
+        list.innerHTML = data.map(item => `
+          <div class="border border-slate-200 rounded-lg p-4 bg-slate-50">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-slate-900">Query Pattern: "${item.query}"</span>
+              <span class="text-xs font-semibold px-2 py-0.5 rounded bg-amber-100 text-amber-800">Learned Rule</span>
+            </div>
+            <p class="text-xs text-slate-600 mb-2"><strong>Correction Note:</strong> ${item.feedback}</p>
+            <div class="bg-slate-900 text-slate-200 rounded p-2 text-xs font-mono mb-2">
+              ${item.correct_logic}
+            </div>
+            <p class="text-xs text-emerald-700 font-medium"><strong>Takeaway:</strong> ${item.lesson_learned}</p>
+          </div>
+        `).join('');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // Support Ctrl+Enter in Textarea
+    document.getElementById('queryInput').addEventListener('keydown', function(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        runQuery();
+      }
+    });
+
+    // Auto-select first sample on initial load
+    window.addEventListener('DOMContentLoaded', () => {
+      selectSample(0);
+    });
+  </script>
+</body>
+</html>

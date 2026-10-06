@@ -18,8 +18,6 @@ from core.self_corrector import SelfCorrectionEngine
 from core.confidence_scorer import ConfidenceScorer
 
 DATASET_DIR = BASE_DIR / "dataset"
-STATIC_DIR = BASE_DIR / "static"
-
 semantic_layer = SemanticLayer(DATASET_DIR)
 schema_context = semantic_layer.get_schema_context()
 db_executor = DBExecutor(DATASET_DIR)
@@ -29,37 +27,45 @@ confidence_scorer = ConfidenceScorer()
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed_path = urllib.parse.urlparse(self.path)
-        path = parsed_path.path
+        path = parsed_path.path.lower()
 
-        if path in ["/", "/index.html"]:
-            self._serve_file(STATIC_DIR / "index.html", "text/html; charset=utf-8")
-        elif path == "/api/datasets":
+        if "dataset" in path:
             self._handle_get_datasets()
-        elif path == "/api/feedback":
+        elif "feedback" in path:
             self._handle_get_feedback()
-        elif path == "/api/samples":
+        elif "sample" in path:
             self._handle_get_samples()
         else:
-            self.send_error(404, "Endpoint not found")
+            # Default to serving UI dashboard for any root or unmapped GET request
+            self._serve_html()
 
     def do_POST(self):
-        parsed_path = urllib.parse.urlparse(self.path)
-        if parsed_path.path == "/api/query":
-            self._handle_post_query()
-        else:
-            self.send_error(404, "Endpoint not found")
+        self._handle_post_query()
 
-    def _serve_file(self, file_path: Path, content_type: str):
-        if not file_path.exists():
-            self.send_error(404, "File not found")
-            return
-        with open(file_path, "rb") as f:
-            content = f.read()
+    def _serve_html(self):
+        candidates = [
+            Path(__file__).parent / "index.html",
+            BASE_DIR / "public" / "index.html",
+            BASE_DIR / "static" / "index.html"
+        ]
+        html_bytes = None
+        for p in candidates:
+            if p.exists():
+                try:
+                    with open(p, "rb") as f:
+                        html_bytes = f.read()
+                    break
+                except Exception:
+                    pass
+
+        if not html_bytes:
+            html_bytes = b"<html><body><h1>Office AI Solution - Query Engine Running</h1></body></html>"
+
         self.send_response(200)
-        self.send_header("Content-Type", content_type)
-        self.send_header("Content-Length", str(len(content)))
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(html_bytes)))
         self.end_headers()
-        self.wfile.write(content)
+        self.wfile.write(html_bytes)
 
     def _handle_get_datasets(self):
         sales_data = []
@@ -165,5 +171,14 @@ class handler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.end_headers()
         self.wfile.write(body)
+
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.end_headers()
