@@ -17,7 +17,9 @@ from core.llm_client import LLMClient
 from core.self_corrector import SelfCorrectionEngine
 from core.confidence_scorer import ConfidenceScorer
 
-DATASET_DIR = BASE_DIR / "dataset"
+DATASET_DIR = Path(__file__).parent / "dataset"
+if not DATASET_DIR.exists():
+    DATASET_DIR = BASE_DIR / "dataset"
 semantic_layer = SemanticLayer(DATASET_DIR)
 schema_context = semantic_layer.get_schema_context()
 db_executor = DBExecutor(DATASET_DIR)
