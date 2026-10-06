@@ -11,55 +11,36 @@ load_dotenv(Path(__file__).parent.parent / ".env")
 
 class LLMClient:
     """
-    Unified LLM Client supporting Google Gemini, OpenAI, and fallback reasoning.
-    Features automatic retry, failover between providers, and clean JSON extraction.
+    Office AI Lab Query Synthesis Client.
+    Features automatic retry across high-speed Flash-Lite models,
+    clean JSON extraction, and domain semantic fallback.
     """
     def __init__(self, provider: Optional[str] = None):
-        self.provider = provider or os.getenv("DEFAULT_PROVIDER", "gemini").lower()
+        self.provider = "office_ai_lab"
         self.gemini_key = os.getenv("GEMINI_API_KEY", "").strip()
-        self.openai_key = os.getenv("OPENAI_API_KEY", "").strip()
 
     def generate(self, prompt: str) -> Dict[str, Any]:
         """
-        Generates structured SQL response using active provider with auto-failover.
+        Generates structured SQL response using Office AI Lab engine.
         """
         response_data = None
         last_error = None
 
-        # 1. Primary Provider Attempt
-        if self.provider == "gemini" and self.gemini_key:
+        if self.gemini_key:
             try:
                 response_data = self._call_gemini(prompt)
             except Exception as e:
-                last_error = f"Gemini Error: {e}"
-                # Failover to OpenAI
-                if self.openai_key:
-                    try:
-                        response_data = self._call_openai(prompt)
-                    except Exception as e2:
-                        last_error += f" | OpenAI Failover Error: {e2}"
+                last_error = f"Engine Error: {e}"
 
-        elif self.provider == "openai" and self.openai_key:
-            try:
-                response_data = self._call_openai(prompt)
-            except Exception as e:
-                last_error = f"OpenAI Error: {e}"
-                # Failover to Gemini
-                if self.gemini_key:
-                    try:
-                        response_data = self._call_gemini(prompt)
-                    except Exception as e2:
-                        last_error += f" | Gemini Failover Error: {e2}"
-
-        # 2. If API calls succeeded and parsed
+        # If API calls succeeded and parsed
         if response_data and "generated_logic" in response_data:
             return response_data
 
-        # 3. Fallback / Deterministic Semantic Synthesizer (Zero-Crash Guarantee)
+        # Fallback / Deterministic Semantic Synthesizer (Zero-Crash Guarantee)
         return self._semantic_fallback_generator(prompt, error_msg=last_error)
 
     def _call_gemini(self, prompt: str) -> Dict[str, Any]:
-        """Calls Google Gemini API using active high-speed lite models."""
+        """Calls Office AI Lab GenAI backend using active high-speed lite models."""
         models_to_try = [
             "gemini-flash-lite-latest",
             "gemini-flash-latest",
@@ -85,31 +66,7 @@ class LLMClient:
             except Exception:
                 continue
 
-        raise RuntimeError(f"Gemini API returned error across all active models.")
-
-    def _call_openai(self, prompt: str) -> Dict[str, Any]:
-        """Calls OpenAI Chat Completions API via REST."""
-        url = "https://api.openai.com/v1/chat/completions"
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {self.openai_key}"
-        }
-        payload = {
-            "model": "gpt-4o-mini",
-            "messages": [
-                {"role": "system", "content": "You are a specialized analytical query generator. Return valid JSON only."},
-                {"role": "user", "content": prompt}
-            ],
-            "response_format": {"type": "json_object"},
-            "temperature": 0.1
-        }
-        res = requests.post(url, headers=headers, json=payload, timeout=20)
-        if res.status_code == 200:
-            data = res.json()
-            content = data["choices"][0]["message"]["content"]
-            return self._parse_json(content)
-        else:
-            res.raise_for_status()
+        raise RuntimeError(f"Office AI Lab Engine returned error across all active endpoints.")
 
     def _parse_json(self, raw_text: str) -> Dict[str, Any]:
         """Extracts and parses JSON object from model output."""

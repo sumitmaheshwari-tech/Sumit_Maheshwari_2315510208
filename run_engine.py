@@ -110,7 +110,7 @@ def run_pipeline(
 def main():
     parser = argparse.ArgumentParser(description="Intelligent Analytics Query Engine")
     parser.add_argument("--dataset", type=str, default="dataset", help="Path to dataset directory")
-    parser.add_argument("--provider", type=str, default="gemini", choices=["gemini", "openai"], help="LLM Provider")
+    parser.add_argument("--provider", type=str, default="office_ai_lab", help="LLM Provider Engine")
     parser.add_argument("--query", type=str, default=None, help="Run a single ad-hoc query")
     parser.add_argument("--output", type=str, default="output.json", help="Path to save output JSON")
     parser.add_argument("--interactive", action="store_true", help="Start an interactive chat session with your data")

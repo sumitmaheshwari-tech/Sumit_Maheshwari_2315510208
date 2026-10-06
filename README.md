@@ -1,7 +1,7 @@
 # Intelligent Analytics Query Engine
 ### Technical Assessment Solution for Office AI Solution
 
-An end-to-end, production-grade Natural Language to OLAP analytical query engine built with **DuckDB**, **Generative AI (Gemini & OpenAI)**, **In-Memory Analytical Sandboxing**, and a **Calibrated Multi-Factor Confidence Scorer**.
+An end-to-end, production-grade Natural Language to OLAP analytical query engine built with **DuckDB**, **Generative AI (Office AI Lab Engine)**, **In-Memory Analytical Sandboxing**, and a **Calibrated Multi-Factor Confidence Scorer**.
 
 ---
 
@@ -50,7 +50,7 @@ The system is implemented as a **Compound AI System** combining deterministic da
                                           v
 +-----------------------------------------+-----------------------------------------+
 |                              2. GENAI SYNTHESIS ENGINE                            |
-|   - Dual-Provider Client: Google Gemini 2.5 Flash & OpenAI GPT-4o-mini            |
+|   - Office AI Lab Synthesis Engine (High-Speed LLM + Guardrails)            |
 |   - Prompt Builder binds schema, metric rules, and few-shot feedback              |
 |   - Generates executable DuckDB SQL + Step-by-Step Rationale                      |
 +-----------------------------------------+-----------------------------------------+
@@ -90,7 +90,7 @@ The system is implemented as a **Compound AI System** combining deterministic da
 | **Semantic Layer** | `core/semantic_layer.py` | Parses `data_dictionary.json`, maps business terms (e.g. *sales* $\to$ *revenue*), and extracts few-shot feedback from `feedback_log.csv`. |
 | **In-Memory OLAP** | `core/db_executor.py` | Embeds DuckDB to execute SQL directly over CSVs in-memory without server setup or disk writes. |
 | **Prompt Builder** | `core/prompt_builder.py` | Assembles context-rich prompts enforcing DuckDB SQL dialect, analytical rules, and JSON output contracts. |
-| **LLM Client** | `core/llm_client.py` | Unified client supporting Gemini and OpenAI with automatic failover and offline fallback. |
+| **LLM Client** | `core/llm_client.py` | Office AI Lab synthesis client with high-speed generation and offline fallback. |
 | **Self-Correction Engine** | `core/self_corrector.py` | Detects syntax or schema binder errors and guides the LLM to fix queries iteratively. |
 | **Confidence Scorer** | `core/confidence_scorer.py` | Computes an objective 0.0 to 1.0 confidence score combining deterministic execution indicators and semantic clarity. |
 | **CLI Runner** | `run_engine.py` | Orchestrates batch processing of queries and writes `output.json`. |
@@ -193,7 +193,7 @@ The system actively ingests `dataset/feedback_log.csv`.
 
 ### Prerequisites
 * Python 3.10+
-* (Optional) Gemini or OpenAI API Key
+* (Optional) Office AI Lab API Key
 
 ### Setup
 ```bash
@@ -213,8 +213,6 @@ pip install -r requirements.txt
 python run_engine.py --provider gemini
 
 # Run all queries using OpenAI
-python run_engine.py --provider openai
-
 # Run a custom ad-hoc natural language query
 python run_engine.py --query "Show total profit for Corporate customer segment"
 ```

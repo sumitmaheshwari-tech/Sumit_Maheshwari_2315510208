@@ -91,10 +91,10 @@
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           <span>DuckDB In-Memory OLAP</span>
         </div>
-        <select id="providerSelect" class="bg-white border border-slate-300 text-slate-700 text-xs rounded-lg px-2.5 py-1.5 font-medium focus:outline-none focus:ring-2 focus:ring-sky-500">
-          <option value="gemini">Google Gemini Flash-Lite (Ultra Fast & Stable)</option>
-          <option value="openai">OpenAI GPT-4o-mini</option>
-        </select>
+        <div class="flex items-center space-x-2 bg-slate-900 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm border border-slate-700">
+          <span class="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span>
+          <span>Office AI Lab</span>
+        </div>
       </div>
 
     </div>
@@ -484,7 +484,7 @@
       const query = document.getElementById('queryInput').value.trim();
       if (!query) return;
 
-      const provider = document.getElementById('providerSelect').value;
+      const provider = 'gemini';
       const runBtn = document.getElementById('runBtn');
       const resultsCard = document.getElementById('resultsCard');
 
