@@ -1,0 +1,106 @@
+[
+  {
+    "query": "Total sales in India for March",
+    "generated_logic": "SELECT ROUND(SUM(revenue), 2) AS total_sales FROM sales WHERE country = 'India' AND month = '2024-03';",
+    "result": 108.0,
+    "confidence_score": 0.99,
+    "explanation": "Filtered sales table for country 'India' and month '2024-03' and calculated total revenue."
+  },
+  {
+    "query": "Top 2 cities by profit",
+    "generated_logic": "SELECT city, ROUND(SUM(profit), 2) AS total_profit FROM sales GROUP BY city ORDER BY total_profit DESC LIMIT 2;",
+    "result": [
+      {
+        "city": "New York",
+        "total_profit": 200
+      },
+      {
+        "city": "San Francisco",
+        "total_profit": 180
+      }
+    ],
+    "confidence_score": 0.99,
+    "explanation": "Grouped records by city, aggregated profit using SUM(), and selected the top 2 cities descending."
+  },
+  {
+    "query": "Average order value by region",
+    "generated_logic": "SELECT region, ROUND(SUM(revenue) / COUNT(DISTINCT order_id), 2) AS avg_order_value FROM sales GROUP BY region ORDER BY region;",
+    "result": [
+      {
+        "region": "APAC",
+        "avg_order_value": 118.5
+      },
+      {
+        "region": "EMEA",
+        "avg_order_value": 799.33
+      },
+      {
+        "region": "NA",
+        "avg_order_value": 1087.47
+      }
+    ],
+    "confidence_score": 0.99,
+    "explanation": "Calculated Average Order Value (AOV) by dividing total revenue by distinct count of orders per region."
+  },
+  {
+    "query": "Which region missed its target in Feb?",
+    "generated_logic": "SELECT ROUND(SUM(revenue), 2) AS total_sales FROM sales WHERE country = 'India' AND month = '2024-03';",
+    "result": 108.0,
+    "confidence_score": 0.99,
+    "explanation": "Filtered sales table for country 'India' and month '2024-03' and calculated total revenue."
+  },
+  {
+    "query": "Sales contribution % by category",
+    "generated_logic": "SELECT ROUND(SUM(revenue), 2) AS total_sales FROM sales WHERE country = 'India' AND month = '2024-03';",
+    "result": 108.0,
+    "confidence_score": 0.99,
+    "explanation": "Filtered sales table for country 'India' and month '2024-03' and calculated total revenue."
+  },
+  {
+    "query": "Top product in each region",
+    "generated_logic": "SELECT region, ROUND(SUM(revenue) / COUNT(DISTINCT order_id), 2) AS avg_order_value FROM sales GROUP BY region ORDER BY region;",
+    "result": [
+      {
+        "region": "APAC",
+        "avg_order_value": 118.5
+      },
+      {
+        "region": "EMEA",
+        "avg_order_value": 799.33
+      },
+      {
+        "region": "NA",
+        "avg_order_value": 1087.47
+      }
+    ],
+    "confidence_score": 0.99,
+    "explanation": "Calculated Average Order Value (AOV) by dividing total revenue by distinct count of orders per region."
+  },
+  {
+    "query": "YoY growth in revenue",
+    "generated_logic": "SELECT ROUND(SUM(revenue), 2) AS total_sales FROM sales WHERE country = 'India' AND month = '2024-03';",
+    "result": 108.0,
+    "confidence_score": 0.99,
+    "explanation": "Filtered sales table for country 'India' and month '2024-03' and calculated total revenue."
+  },
+  {
+    "query": "Revenue of top 3 customers per region",
+    "generated_logic": "SELECT region, ROUND(SUM(revenue) / COUNT(DISTINCT order_id), 2) AS avg_order_value FROM sales GROUP BY region ORDER BY region;",
+    "result": [
+      {
+        "region": "APAC",
+        "avg_order_value": 118.5
+      },
+      {
+        "region": "EMEA",
+        "avg_order_value": 799.33
+      },
+      {
+        "region": "NA",
+        "avg_order_value": 1087.47
+      }
+    ],
+    "confidence_score": 0.99,
+    "explanation": "Calculated Average Order Value (AOV) by dividing total revenue by distinct count of orders per region."
+  }
+]
